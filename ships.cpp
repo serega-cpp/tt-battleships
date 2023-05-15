@@ -4,31 +4,30 @@
 
 using namespace std;
 
-size_t get_ship_size(vector<string> &m, size_t i, size_t j) {
+const unsigned int cRightDirection = 1;
+const unsigned int cBottomDirection = 2;
+const unsigned int cAnyDirection = cRightDirection + cBottomDirection;
+
+size_t get_ship_size(vector<string> &m, size_t i, size_t j, unsigned int direction) {
 	if (m[i][j] == '.') // not a ship
 		return 0;
 
 	m[i][j] = '.';
-	size_t size = 1;
 
-	if (j + 1 < m[i].size())
-		size += get_ship_size(m, i, j + 1);
-	if (i + 1 < m.size())
-		size += get_ship_size(m, i + 1, j);
-	if (j > 0)
-		size += get_ship_size(m, i, j - 1);
-	if (i > 0)
-		size += get_ship_size(m, i - 1, j);
+	if ((direction & cRightDirection) && j + 1 < m[i].size() && m[i][j + 1] != '.') // right
+		return get_ship_size(m, i, j + 1, cRightDirection) + 1;
+	if ((direction & cBottomDirection) && i + 1 < m.size() && m[i + 1][j] != '.') // bottom
+		return get_ship_size(m, i + 1, j, cBottomDirection) + 1;
 
-	return size;
+	return 1;
 }
 
-vector<size_t> get_ships(vector<string> &m, int max_size) {
-	vector<size_t> ships(max_size);
-	
+vector<size_t> get_ships(vector<string> &m, size_t max_ship_size) {
+	vector<size_t> ships(max_ship_size);
+
 	for (size_t i = 0; i < m.size(); i++) {
 		for (size_t j = 0; j < m[i].size(); j++) {
-			if (size_t size = get_ship_size(m, i, j); size > 0) { // ship detected
+			if (size_t size = get_ship_size(m, i, j, cAnyDirection); size > 0) { // ship detected
 				ships[size - 1]++;
 			}
 		}
@@ -50,7 +49,8 @@ int main(int argc, const char * argv[]) {
 		cout << s << endl;
 	}
 
-	auto ships = get_ships(sea, 3);
+	const size_t cMaxShipSize = 3;
+	vector<size_t> ships = get_ships(sea, cMaxShipSize);
 
 	for (size_t i = 0; i < ships.size(); i++) {
 		cout << (i + 1) << ": " << ships[i] << endl;
